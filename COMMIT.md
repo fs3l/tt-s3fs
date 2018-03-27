@@ -12,6 +12,8 @@ s3fs_chmod
      |
      +-> get_object_attribute
           |
+          |   PutHeadRequest
+          |   insertAuthHeaders
           +-> HeadRequest
                 |
                 +-> insertV4Headers
