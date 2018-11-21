@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -36,6 +36,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <map>
 #include <list>
 #include <vector>
@@ -1137,14 +1138,17 @@ bool FdEntity::SetAllStatus(bool is_loaded)
 int FdEntity::Load(off_t start, size_t size)
 {
   S3FS_PRN_DBG("[path=%s][fd=%d][offset=%jd][size=%jd]", path.c_str(), fd, (intmax_t)start, (intmax_t)size);
-
+  
   if(-1 == fd){
     return -EBADF;
   }
   AutoLock auto_lock(&fdent_lock);
-
+  //usleep(10000);
   int result = 0;
-
+      //ofstream output;
+      //output.open("output.txt");
+      //output << "test" << endl;
+      //output.close();
   // check loaded area & load
   fdpage_list_t unloaded_list;
   if(0 < pagelist.GetUnloadedPages(unloaded_list, start, size)){
@@ -1160,7 +1164,8 @@ int FdEntity::Load(off_t start, size_t size)
         need_load_size = (static_cast<size_t>((*iter)->next()) <= size_orgmeta ? (*iter)->bytes : (size_orgmeta - (*iter)->offset));
       }
       size_t over_size = (*iter)->bytes - need_load_size;
-
+      //output << need_load_size << endl;
+      //output.close();
       // download
       if(static_cast<size_t>(2 * S3fsCurl::GetMultipartSize()) <= need_load_size && !nomultipart){ // default 20MB
         // parallel request
@@ -1437,7 +1442,10 @@ int FdEntity::NoCacheCompleteMultipartPost(void)
 int FdEntity::RowFlush(const char* tpath, bool force_sync)
 {
   int result = 0;
-
+  ofstream output;
+  output.open("./output.txt");
+  output << "test2" << endl;
+  //output.close();
   S3FS_PRN_INFO3("[tpath=%s][path=%s][fd=%d]", SAFESTRPTR(tpath), path.c_str(), fd);
 
   if(-1 == fd){
@@ -1469,7 +1477,7 @@ int FdEntity::RowFlush(const char* tpath, bool force_sync)
         // upload all by multipart uploading
         if(0 != (result = NoCacheLoadAndPost())){
           S3FS_PRN_ERR("failed to upload all area by multipart uploading(errno=%d)", result);
-          return static_cast<ssize_t>(result);
+        output << "no cache load and post" << endl;  
         }
       }
     }else{
@@ -1478,6 +1486,7 @@ int FdEntity::RowFlush(const char* tpath, bool force_sync)
   }
 
   if(0 == upload_id.length()){
+    output << "normal" << endl;
     // normal uploading
 
     /*
@@ -1521,10 +1530,21 @@ int FdEntity::RowFlush(const char* tpath, bool force_sync)
       if(0 != backup){
         S3fsCurl::SetReadwriteTimeout(backup);
       }
+      output << "if " << tpath << endl;
+
     }else{
       S3fsCurl s3fscurl(true);
       result = s3fscurl.PutRequest(tpath ? tpath : path.c_str(), orgmeta, fd);
-    }
+      output << "ELSE" << endl;
+      output << "Path: " << path.c_str() << endl;
+      output << endl;
+      output << "header (map): " << endl; 
+      for(headers_t::iterator iter = orgmeta.begin(); iter!=orgmeta.end(); ++iter){
+	output << "   " << iter->first << " " << iter->second << endl;
+}
+      output << endl;
+      output << "File descriptor: " << fd << endl;        
+ }
 
     // seek to head of file.
     if(0 == result && 0 != lseek(fd, 0, SEEK_SET)){
@@ -1560,6 +1580,7 @@ int FdEntity::RowFlush(const char* tpath, bool force_sync)
   if(0 == result){
     is_modify = false;
   }
+  output.close(); 
   return result;
 }
 
