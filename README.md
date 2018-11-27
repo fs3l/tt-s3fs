@@ -3,6 +3,9 @@ Installation
 
 * On Linux, ensure you have all the dependencies:
 
+Create a bucket:
+http://www.whiteboardcoder.com/2017/12/how-to-mount-s3-bucket-as-hard-drive.html
+
 On Ubuntu 14.04:
 
 ```
@@ -35,5 +38,6 @@ $ brew install s3fs
 
 Modifications
 ------------
-So far, there would be a printting out of parameters when writing any files. The output would appear in /output.txt 
+So far, there would be a printting out of parameters when writing any files. The output would appear in /output.txt
+
 
