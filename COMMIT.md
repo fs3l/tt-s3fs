@@ -1,3 +1,12 @@
+
+S3FS curl call chain
+---
+
+```
+
+```
+
+
 FUSE authentication
 ---
 
@@ -19,6 +28,28 @@ s3fs_chmod
                 +-> insertV4Headers
                       |
                       +-> CalcSignature: s3fs_HMAC256
+
+```
+
+```
+(Fuse level)
+load
+|
++-> GetObject(path, fd, (*iter)->offset, need_load_size)
+     |
+     +-> Request()
+          |
+          +-> MultiPerform()
+              MultiRead()
+              |
+              +-> S3fsMultiCurl::RequestPerformWrapper()
+                    |
+                    +-> RequestPerform()
+                         |
+                         +-> Curl_easy_perform(hCurl)    (Curl level)
+                              |
+                              +-> open ssl
+                         
 
 ```
 
