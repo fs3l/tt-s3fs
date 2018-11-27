@@ -1,3 +1,9 @@
+Tasks
+
+- Task 1: Interprete a load operation as a series of key-value reads. 
+    - This is a page read A key is a page address (path+offset) and a value is the page content
+    - Print out the "GetObject" call by key-value reads.
+
 
 S3FS curl call chain
 ---
